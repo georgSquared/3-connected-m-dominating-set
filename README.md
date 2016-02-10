@@ -7,6 +7,9 @@ by Wei Wang, Bei Liu, Donghyun Kim, Deying Li, Jingyi Wang, Yaolin Jiang
 
 This is the repo for a 2016 project for the class Mobile and Pervasive Computing(http://inf-server.inf.uth.gr/courses/CE522/) under Dimitrios Katsaros (http://inf-server.inf.uth.gr/~dkatsar/)
 
+University of Thessaly,
+Department of Electrical and Computer Engineering
+
 George Georgiou
 Sotiris Magionas
 Thanos Gkantsidis
