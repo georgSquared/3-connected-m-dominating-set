@@ -7,9 +7,9 @@ G.add_node(1)
 
 G.add_nodes_from(range(2,8))
 
-Vetrices = [8,9,10]
+makis = [8,9,10]
 
-G.add_nodes_from(Vetrices)
+G.add_nodes_from(makis)
 
 print "Nodes of G "
 print G.nodes()
@@ -44,7 +44,8 @@ D = nx.dominating_set(G)
 print "Dominators"
 print D
 
-nx.draw(G)
+nx.draw_circular(G)
 plt.show()
 
-
+nx.draw(G)
+plt.show()
