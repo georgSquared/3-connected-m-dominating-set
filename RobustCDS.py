@@ -1,5 +1,7 @@
+import sys
 import networkx as nx
 import matplotlib.pyplot as plt
+from tarjan import biconnected_component_edges
 
 #Create a random graph until it is 3-connected
 def create_3():
@@ -33,7 +35,7 @@ def computeCDS(G):
 	print "Neighbourhood "
 	print neighbourhood
 
-	print "Index of min value"
+	print "Index of min value is",
 	print neighbourhood.index(min(neighbourhood))
 
 	#Mpakalis
@@ -94,15 +96,75 @@ def computeCDS(G):
 		print "F is",
 		print F
 
+
 	return D
 
 
+def compute_1_connected_k_dominating_set(G, CDS):
 
-	
+	MIScandidates = []
+	add_flag = True
+
+	MIScandidates.append(CDS[0])
+
+	for i in range(1, len(CDS)):
+		for j in range(0, len(MIScandidates)):
+			if G.has_edge(CDS[i], MIScandidates[j]):
+				add_flag = False
+				break
+		if add_flag:
+			MIScandidates.append(CDS[i])
+
+	#print "MIScandidates"
+	#print MIScandidates
+
+	MIS = nx.maximal_independent_set(G, MIScandidates)
+	#print "Maximal Independent Set"
+	#print MIS
+
+	C = list(set(CDS) - set(MIScandidates))
+	#print "C is",
+	#print C
+
+	newCDS = MIS
+	#print newCDS
+
+	for i in C:
+		newCDS.append(i)
+
+	CDSGraph = G.subgraph(newCDS)
+
+	if not (nx.is_dominating_set(G, newCDS) and nx.is_connected(CDSGraph)):
+		print "Error, C and I did not create a CDS"
+		sys.exit()
+
+	I1 = MIS
+
+	newG = G.copy()
+
+	newG.remove_nodes_from(I1)
+
+	I2 = nx.maximal_independent_set(newG)
+
+	#Union of sets
+	DA = list(set(I1) | set(I2) | set(C))
+
+	return DA
+
+def compute_2_connected_k_dominating_set(G, DA):
+
+	graphDA = G.subgraph(DA)
+
+	DB = DA
+
+	B = biconnected_component_edges(graphDA)
+
 
 
 G = create_3()
 print "Connectivity of G is %d"%(nx.node_connectivity(G))
+
+print "\n"
 
 print "Nodes of G "
 print G.nodes()
@@ -110,7 +172,12 @@ print G.nodes()
 print "Edges of G"
 print G.edges()
 
+print "\n"
+
 CDS = computeCDS(G)
+
+print "\n"
+
 print "CDS"
 print CDS
 
@@ -118,3 +185,22 @@ if nx.is_dominating_set(G, CDS):
 	print "Succesfull Connected Dominating Set"
 else:
 	print "ERROR, did not achieve Connected Dominating Set"
+
+print "\n"
+
+CDS = compute_1_connected_k_dominating_set(G, CDS)
+print "1-connected 3-dominating set"
+print CDS
+
+CDS = compute_2_connected_k_dominating_set(G, CDS)
+print "2-connected 3-dominating set"
+print CDS
+
+#GraphCDS = G.subgraph(CDS)
+
+#print "Is the graph connected?"
+#print nx.is_connected(GraphCDS)
+
+#print biconnected_component_edges(GraphCDS)
+
+
