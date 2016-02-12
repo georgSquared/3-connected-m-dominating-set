@@ -1,14 +1,13 @@
 import sys
 import networkx as nx
 import matplotlib.pyplot as plt
-from tarjan import biconnected_component_edges
 
 #Create a random graph until it is 3-connected
 def create_3():
 	conn = 1
 
 	while conn<3:
-		G= nx.gnm_random_graph(20, 40)
+		G= nx.gnm_random_graph(40, 100)
 		conn = nx.node_connectivity(G)
 
 	return G
@@ -21,8 +20,8 @@ def computeCDS(G):
 
 	#Current CDS in D
 	D = G.nodes()
-	print "Initial D"
-	print D
+	#print "Initial D"
+	#print D
 
 	#Current fixed vetrices in F
 	F = []
@@ -32,11 +31,11 @@ def computeCDS(G):
 	for i in range(0, nx.number_of_nodes(G)):
 		neighbourhood.append(len(G.neighbors(i)))
 
-	print "Neighbourhood "
-	print neighbourhood
+	#print "Neighbourhood "
+	#print neighbourhood
 
-	print "Index of min value is",
-	print neighbourhood.index(min(neighbourhood))
+	#print "Index of min value is",
+	#print neighbourhood.index(min(neighbourhood))
 
 	#Mpakalis
 	minimum = 99999
@@ -56,11 +55,11 @@ def computeCDS(G):
 
 		#u = neighbourhood.index(minimum)
 
-		print "D is ",
-		print D
+		#print "D is ",
+		#print D
 
-		print "u is",
-		print u
+		#print "u is",
+		#print u
 
 		tempG = graphD.copy()
 		tempG.remove_node(u)
@@ -72,7 +71,7 @@ def computeCDS(G):
 
 			#Error correction
 			if not nx.is_dominating_set(G, D):
-				print "Error, reverting D and exiting"
+				#print "Error, reverting D and exiting"
 				D.append(u)
 				break
 
@@ -93,8 +92,8 @@ def computeCDS(G):
 				#w = neighbourhood.index(maximum)
 				F.append(w)
 		
-		print "F is",
-		print F
+		#print "F is",
+		#print F
 
 
 	return D
@@ -157,11 +156,94 @@ def compute_2_connected_k_dominating_set(G, DA):
 
 	DB = DA
 
-	B = biconnected_component_edges(graphDA)
+	genB = nx.biconnected_components(graphDA)
+	
+	B = []
+	for item in genB:
+		B.append(list(item))
+
+	#print "B"
+	#print B
+
+	art_points = list(nx.articulation_points(graphDA))
+	#print "Articulation Points"
+	#print art_points
+
+	P = []
+
+	while len(B)>1:
+
+
+		for block in B:
+			inducedL = list(set(block) - set(art_points))
+			L = block
+
+			#print "L"
+			#print L
+			#print "inducedL"
+			#print inducedL
+
+			if inducedL:
+				break
+
+		for v in inducedL:
+			tempDB = list(DB)
+			tempDB.remove(v)
+
+			#Now for nodes in DA, may need DB
+			for u in list(set(graphDA.nodes()) - set(L)):
+				tempDB.remove(u)
+
+				newG = G.copy()
+				newG.remove_nodes_from(tempDB)
+
+				#Not sure if this part can make the algorithm fail
+				if nx.has_path(newG, v, u):
+					tempP = nx.shortest_path(newG, v, u)
+					P.append(tempP)
+
+		#print "P"
+		#print P
+		
+		minPath = min(P, key=len)
+
+		#Keep intermediate nodes of path
+		interPath = list(minPath)
+		interPath.pop(0)
+		interPath.pop(-1)
+
+
+		for node in interPath:
+			DB.append(node)
+
+		#Compute new CDS graph and recalculate B
+		tempGraph = G.subgraph(DB)
+		B = []
+		for item in genB:
+			B.append(list(item))
+
+		genB = nx.biconnected_components(tempGraph)
+
+		#print "B"
+		#print B
+
+		art_points = list(nx.articulation_points(tempGraph))
+		#print "Articulation Points"
+		#print art_points
+
+	return DB
+
+
+
+
 
 
 
 G = create_3()
+
+#nx.draw(G)
+#plt.show()
+
 print "Connectivity of G is %d"%(nx.node_connectivity(G))
 
 print "\n"
@@ -181,6 +263,10 @@ print "\n"
 print "CDS"
 print CDS
 
+#G1 = G.subgraph(CDS) 
+#nx.draw(G1)
+#plt.show()
+
 if nx.is_dominating_set(G, CDS):
 	print "Succesfull Connected Dominating Set"
 else:
@@ -192,9 +278,21 @@ CDS = compute_1_connected_k_dominating_set(G, CDS)
 print "1-connected 3-dominating set"
 print CDS
 
-CDS = compute_2_connected_k_dominating_set(G, CDS)
-print "2-connected 3-dominating set"
-print CDS
+#G2 = G.subgraph(CDS) 
+#nx.draw(G2)
+#plt.show()
+
+graphCDS = G.subgraph(CDS)
+
+if not (nx.is_biconnected(graphCDS)):
+	CDS = compute_2_connected_k_dominating_set(G, CDS)
+	print "2-connected 3-dominating set"
+	print CDS
+else:
+	print "Above set is also 2-connected"
+
+
+
 
 #GraphCDS = G.subgraph(CDS)
 
