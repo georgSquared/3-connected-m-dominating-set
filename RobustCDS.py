@@ -3,12 +3,15 @@ import networkx as nx
 import matplotlib.pyplot as plt
 
 #Create a random graph until it is 3-connected
-def create_3():
+def create_3(nodes, edges):
 	conn = 1
+	loop_count = 0
 
-	while conn<3:
-		G= nx.gnm_random_graph(40, 100)
+	while conn<3 and loop_count<1000:
+		G= nx.gnm_random_graph(nodes, edges)
 		conn = nx.node_connectivity(G)
+
+		loop_count = loop_count + 1
 
 	return G
 
@@ -233,13 +236,87 @@ def compute_2_connected_k_dominating_set(G, DA):
 
 	return DB
 
+def compute_3_connected_k_dominating_set(G, D):
+
+	graphCDS = G.subgraph(D) 
+
+	if nx.node_connectivity(graphCDS)<2:
+		print "Input is not 2-connected.Exiting"
+		return D
+
+	separators = list(nx.all_node_cuts(graphCDS))
+
+	#print "separators"
+	#print separators
+
+	while separators and nx.node_connectivity(graphCDS)<3:
+
+		broken = False
+
+		discD = list(set(D) - separators[0])
+
+		#print "discD"
+		#print discD
+
+		temp_graph_D = G.subgraph(discD)
+
+		genD = nx.connected_components(temp_graph_D)
+
+		components = list(genD)
+		#print "Components"
+		#print components
+
+		for v in components[0]:
+
+			tempD = list(D)
+			tempD.remove(v)
+
+			for u in components[1]:
+
+				tempD.remove(u)
+
+				newG = G.copy()
+				newG.remove_nodes_from(tempD)
+
+				if nx.has_path(newG, v, u):
+					Hpath = nx.shortest_path(newG, v, u)
+
+					#print "Hpath is",
+					#print Hpath
+
+					broken = True
+					break
+
+			if broken:
+				break
+
+		for node in Hpath:
+			if node not in D:
+				D.append(node)
+
+		graphCDS = G.subgraph(D)
+		separators = list(nx.all_node_cuts(graphCDS))
+
+		#print "separators"
+		#print separators
+
+	return D
 
 
+print "Please give number of desired nodes and edges"
 
+N = int(raw_input("Nodes:"))
+E = int(raw_input("Edges:"))
 
+G = create_3(N, E)
 
+while nx.node_connectivity(G)<3:
+	print "Could not create 3-connected graph. Please consider increasing the edges"
 
-G = create_3()
+	N = int(raw_input("Nodes:"))
+	E = int(raw_input("Edges:"))
+
+	G = create_3(N, E)
 
 #nx.draw(G)
 #plt.show()
@@ -285,12 +362,24 @@ print CDS
 graphCDS = G.subgraph(CDS)
 
 if not (nx.is_biconnected(graphCDS)):
+	print "\n"
 	CDS = compute_2_connected_k_dominating_set(G, CDS)
 	print "2-connected 3-dominating set"
 	print CDS
+	print "\n"
 else:
 	print "Above set is also 2-connected"
+	print "\n"
 
+CDS = compute_3_connected_k_dominating_set(G, CDS)
+
+G3 = G.subgraph(CDS)
+
+if nx.node_connectivity(G3)>=3:
+	print "3-connected 3-dominating set"
+	print CDS
+else:
+	print "Failure. Final Result is not 3-connected"
 
 
 
