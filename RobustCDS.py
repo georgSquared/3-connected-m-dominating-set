@@ -40,13 +40,13 @@ def computeCDS(G):
 	#print "Index of min value is",
 	#print neighbourhood.index(min(neighbourhood))
 
-	#Mpakalis
+	
 	minimum = 99999
 	maximum = -1
 
 	while (set(D) - set(F)):
 
-		#Mpakalis
+		
 		minimum = 99999
 		maximum = -1
 
@@ -142,6 +142,8 @@ def compute_1_connected_k_dominating_set(G, CDS):
 
 	I1 = MIS
 
+	#Here we just construct a 3-dominating set
+	#Could be a loop to m, for an m-dominating set
 	newG = G.copy()
 
 	newG.remove_nodes_from(I1)
@@ -200,7 +202,7 @@ def compute_2_connected_k_dominating_set(G, DA):
 				newG = G.copy()
 				newG.remove_nodes_from(tempDB)
 
-				#Not sure if this part can make the algorithm fail
+				#This part can make the algorithm fail
 				if nx.has_path(newG, v, u):
 					tempP = nx.shortest_path(newG, v, u)
 					P.append(tempP)
@@ -302,6 +304,9 @@ def compute_3_connected_k_dominating_set(G, D):
 
 	return D
 
+"""
+START OF MAIN PROGRAM
+"""
 
 print "Please give number of desired nodes and edges"
 
@@ -333,6 +338,17 @@ print G.edges()
 
 print "\n"
 
+position = nx.fruchterman_reingold_layout(G)
+
+nx.draw_networkx_nodes(G, position, nodelist=G.nodes(), node_color="y")
+
+nx.draw_networkx_edges(G,position)
+nx.draw_networkx_labels(G,position)
+
+#plt.show()
+plt.savefig("1_initial.png")
+
+
 CDS = computeCDS(G)
 
 print "\n"
@@ -351,6 +367,17 @@ else:
 
 print "\n"
 
+#position = nx.fruchterman_reingold_layout(G)
+
+#nx.draw_networkx_nodes(G,position, nodelist=G.nodes(), node_color="b")
+nx.draw_networkx_nodes(G,position, nodelist=CDS, node_color="r")
+
+#nx.draw_networkx_edges(G,position)
+#nx.draw_networkx_labels(G,position)
+
+plt.savefig("2_CDS.png")
+
+
 CDS = compute_1_connected_k_dominating_set(G, CDS)
 print "1-connected 3-dominating set"
 print CDS
@@ -358,6 +385,19 @@ print CDS
 #G2 = G.subgraph(CDS) 
 #nx.draw(G2)
 #plt.show()
+
+#position = nx.fruchterman_reingold_layout(G)
+
+#nx.draw_networkx_nodes(G,position, nodelist=G.nodes(), node_color="b")
+nx.draw_networkx_nodes(G,position, nodelist=CDS, node_color="r")
+
+#nx.draw_networkx_edges(G,position)
+#nx.draw_networkx_labels(G,position)
+
+plt.savefig("3_1-conn_3-dom.png")
+
+
+
 
 graphCDS = G.subgraph(CDS)
 
@@ -371,6 +411,17 @@ else:
 	print "Above set is also 2-connected"
 	print "\n"
 
+#position = nx.fruchterman_reingold_layout(G)
+
+#nx.draw_networkx_nodes(G,position, nodelist=G.nodes(), node_color="b")
+nx.draw_networkx_nodes(G,position, nodelist=CDS, node_color="r")
+
+#nx.draw_networkx_edges(G,position)
+#nx.draw_networkx_labels(G,position)
+
+plt.savefig("4_2-conn_3-dom.png")
+
+
 CDS = compute_3_connected_k_dominating_set(G, CDS)
 
 G3 = G.subgraph(CDS)
@@ -381,7 +432,17 @@ if nx.node_connectivity(G3)>=3:
 else:
 	print "Failure. Final Result is not 3-connected"
 
+#DRAWING TESTS
 
+#position = nx.fruchterman_reingold_layout(G)
+
+#nx.draw_networkx_nodes(G,position, nodelist=G.nodes(), node_color="b")
+nx.draw_networkx_nodes(G,position, nodelist=CDS, node_color="r")
+
+#nx.draw_networkx_edges(G,position)
+#nx.draw_networkx_labels(G,position)
+
+plt.savefig("5_3-conn_3-dom.png")
 
 #GraphCDS = G.subgraph(CDS)
 
